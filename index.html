@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+  <head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="js/jquery-2.2.0.min.js"></script>
+    <script type="text/javascript" src="js/koikoi.js"></script>
+    <script type="text/javascript">
+      $(function(){
+
+        $("#btnDrawCard").on("click", function(e){
+          var cardCanvas = document.getElementById("cardCanvas");
+          var cardContext = cardCanvas.getContext('2d');
+          if (cardContext) {
+            var newCard = koikoi.draw();
+            if (newCard) {
+              var newImage = new Image();
+              newImage.onload = function () {
+                cardContext.drawImage(newImage, 0, 0, 93, 150);
+              }
+              newImage.src = "./image/" + newCard.picture + ".jpg";
+            }
+          } else {
+            alert("Your browser does not support canvas");
+          }
+        });
+      })
+    </script>
+  </head>
+  <body>
+    <div>
+      <input type="button" value="draw" id="btnDrawCard">
+    </div>
+    <div id="canvasContainer">
+      <canvas id="cardCanvas" width="800" height="600">
+        Your browser does not support canvas
+      </canvas>
+    </div>
+  </body
+</html>
