@@ -17,7 +17,7 @@
         }
 
         function preloadImages () {
-          var cards = koikoi.fetchAll();
+          var cards = hanafuda.fetchAll();
           var loadedImages = 0;
           for (var i in cards) {
             var image = new Image();
@@ -33,8 +33,8 @@
 
         function initGame () {
           for (var i = 0; i < 8 ; i++) {
-            var newCard_1 = koikoi.draw(),
-                newCard_2 = koikoi.draw();
+            var newCard_1 = hanafuda.draw(),
+                newCard_2 = hanafuda.draw();
             if (newCard_1 && newCard_2) {
               cardContext.drawImage(gameImages[newCard_1.id], i * 100, -147, 93, 150);
               cardContext.drawImage(gameImages[newCard_2.id], i * 100, 400, 93, 150);
@@ -44,7 +44,7 @@
           }
 
           for (var i = 0; i < 8 ; i++) {
-            var newCard = koikoi.draw();
+            var newCard = hanafuda.draw();
             if (newCard) {
               var x = 0, y = 0;
               if (i % 2) {

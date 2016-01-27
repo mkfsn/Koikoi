@@ -91,7 +91,7 @@
 
   initializeDeck()
 
-  self.koikoi = {
+  self.hanafuda = {
     draw: drawCard,
     fetchAll: fetchAllDeckCard 
   }
