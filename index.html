@@ -5,25 +5,36 @@
     <script type="text/javascript" src="js/jquery-2.2.0.min.js"></script>
     <script type="text/javascript" src="js/koikoi.js"></script>
     <script type="text/javascript">
-      $(function(){
 
+      var gameImages = {};
+
+      function preloadImages () {
+        var cards = koikoi.fetchAll();
+        for (var i in cards) {
+          var image = new Image();
+          image.src = "./image/" + cards[i].picture + ".jpg";
+          gameImages[cards[i].id] = image;
+        }
+      }
+
+      $(function(){
         $("#btnDrawCard").on("click", function(e){
           var cardCanvas = document.getElementById("cardCanvas");
           var cardContext = cardCanvas.getContext('2d');
           if (cardContext) {
             var newCard = koikoi.draw();
             if (newCard) {
-              var newImage = new Image();
-              newImage.onload = function () {
-                cardContext.drawImage(newImage, 0, 0, 93, 150);
-              }
-              newImage.src = "./image/" + newCard.picture + ".jpg";
+              cardContext.drawImage(gameImages[newCard.id], 0, 0, 93, 150);
+            } else {
+              console.error("No more cards");
             }
           } else {
             alert("Your browser does not support canvas");
           }
         });
-      })
+      });
+
+      preloadImages();
     </script>
   </head>
   <body>

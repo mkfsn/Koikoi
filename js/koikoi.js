@@ -9,6 +9,7 @@
     this.name = name;
     this.value = value;
     this.picture = picture;
+    this.id = month * 10 + value;
   }
 
   Card.prototype.toString = function () {
@@ -84,10 +85,15 @@
     return newCard;
   }
 
+  function fetchAllDeckCard() {
+    return DECK;
+  }
+
   initializeDeck()
 
   self.koikoi = {
-    draw: drawCard
+    draw: drawCard,
+    fetchAll: fetchAllDeckCard 
   }
     
 })(typeof(exports) === "undefined" ? window : exports);
