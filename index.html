@@ -18,23 +18,17 @@
 
         function preloadImages () {
           var cards = koikoi.fetchAll();
+          var loadedImages = 0;
           for (var i in cards) {
             var image = new Image();
             image.src = "./image/" + cards[i].picture + ".jpg";
             gameImages[cards[i].id] = image;
             image.onload = function(){
-              maybeInitGame();
+              loadedImages++;
+              if (loadedImages == cards.length)
+                initGame();
             };
           }
-        }
-
-        function maybeInitGame () {
-          var complete = true;
-          for (var i in gameImages)
-            complete &= gameImages[i].complete;
-          if (!complete)
-            return;
-          initGame();
         }
 
         function initGame () {
