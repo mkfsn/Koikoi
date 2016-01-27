@@ -3,66 +3,80 @@
   <head>
     <meta charset="UTF-8">
     <script type="text/javascript" src="js/jquery-2.2.0.min.js"></script>
+    <script type="text/javascript" src="js/paper.js"></script>
     <script type="text/javascript" src="js/hanafuda.js"></script>
-    <script type="text/javascript">
+    <script type="text/paperscript" canvas="cardCanvas">
+      var SCALE = 1 / 10;
       var gameImages = {};
-      var cardCanvas = null, cardContext = null;
 
-      $(function(){
-        cardCanvas = document.getElementById("cardCanvas");
-        cardContext = cardCanvas.getContext('2d');
-        if (!cardContext) {
-          alert("Your browser does not support canvas");
-          return;
+      function preloadImages () {
+        var cards = hanafuda.fetchAll();
+        var loadedImages = 0;
+        for (var i in cards) {
+          var image = new Image();
+          image.id = cards[i].id;
+          image.src = "./image/" + cards[i].picture + ".jpg";
+          gameImages[cards[i].id] = image;
+          image.onload = function(){
+            loadedImages++;
+            if (loadedImages == cards.length)
+              initGame();
+          };
         }
+      }
 
-        function preloadImages () {
-          var cards = hanafuda.fetchAll();
-          var loadedImages = 0;
-          for (var i in cards) {
-            var image = new Image();
-            image.src = "./image/" + cards[i].picture + ".jpg";
-            gameImages[cards[i].id] = image;
-            image.onload = function(){
-              loadedImages++;
-              if (loadedImages == cards.length)
-                initGame();
+      function initGame () {
+        for (var i = 0; i < 8 ; i++) {
+          var newCard_1 = hanafuda.draw(),
+              newCard_2 = hanafuda.draw();
+          if (newCard_1 && newCard_2) {
+            var raster_1 = new Raster(gameImages[newCard_1.id]),
+                raster_2 = new Raster(gameImages[newCard_2.id]);
+
+            raster_1.position.x = 48 + i * 80;
+            raster_1.position.y = -57;
+            raster_1.scale(SCALE);
+            raster_2.position.x = 48 + i * 80;
+            raster_2.position.y = 450;
+            raster_2.scale(SCALE);
+
+            var shiftRaster = function() {
+              this.position += new Point(0, -15);
             };
+            var unShiftRaster = function() {
+              this.position += new Point(0, 15);
+            };
+            raster_2.onClick = function() {
+              console.log(this.data);
+            }
+            raster_2.data = newCard_2;
+            raster_2.on('mouseenter', shiftRaster);
+            raster_2.on('mouseleave', unShiftRaster);
+          } else {
+            console.error("No more cards");
           }
         }
-
-        function initGame () {
-          for (var i = 0; i < 8 ; i++) {
-            var newCard_1 = hanafuda.draw(),
-                newCard_2 = hanafuda.draw();
-            if (newCard_1 && newCard_2) {
-              cardContext.drawImage(gameImages[newCard_1.id], i * 100, -147, 93, 150);
-              cardContext.drawImage(gameImages[newCard_2.id], i * 100, 400, 93, 150);
+        for (var i = 0; i < 8 ; i++) {
+          var newCard = hanafuda.draw();
+          if (newCard) {
+            var x = 0, y = 0;
+            if (i % 2) {
+              x = 48 + (Math.floor(i/2) + 4) * 80;
+              y = 120;
             } else {
-              console.error("No more cards");
+              x = 48 + (Math.floor(i/2) + 4) * 80;
+              y = 250;
             }
-          }
-
-          for (var i = 0; i < 8 ; i++) {
-            var newCard = hanafuda.draw();
-            if (newCard) {
-              var x = 0, y = 0;
-              if (i % 2) {
-                x = (Math.floor(i/2) + 4) * 100;
-                y = 30;
-              } else {
-                x = (Math.floor(i/2) + 4) * 100;
-                y = 190;
-              }
-              cardContext.drawImage(gameImages[newCard.id], x, y, 93, 150);
-            } else {
-              console.error("No more cards");
-            }
+            var raster = new Raster(gameImages[newCard.id]);
+            raster.position.x = x;
+            raster.position.y = y;
+            raster.scale(SCALE);
+          } else {
+            console.error("No more cards");
           }
         }
-
-        preloadImages();
-      });
+      }
+      preloadImages();
     </script>
   </head>
   <body>
