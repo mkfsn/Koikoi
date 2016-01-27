@@ -5,42 +5,73 @@
     <script type="text/javascript" src="js/jquery-2.2.0.min.js"></script>
     <script type="text/javascript" src="js/hanafuda.js"></script>
     <script type="text/javascript">
-
       var gameImages = {};
-
-      function preloadImages () {
-        var cards = koikoi.fetchAll();
-        for (var i in cards) {
-          var image = new Image();
-          image.src = "./image/" + cards[i].picture + ".jpg";
-          gameImages[cards[i].id] = image;
-        }
-      }
+      var cardCanvas = null, cardContext = null;
 
       $(function(){
-        $("#btnDrawCard").on("click", function(e){
-          var cardCanvas = document.getElementById("cardCanvas");
-          var cardContext = cardCanvas.getContext('2d');
-          if (cardContext) {
-            var newCard = koikoi.draw();
-            if (newCard) {
-              cardContext.drawImage(gameImages[newCard.id], 0, 0, 93, 150);
+        cardCanvas = document.getElementById("cardCanvas");
+        cardContext = cardCanvas.getContext('2d');
+        if (!cardContext) {
+          alert("Your browser does not support canvas");
+          return;
+        }
+
+        function preloadImages () {
+          var cards = koikoi.fetchAll();
+          for (var i in cards) {
+            var image = new Image();
+            image.src = "./image/" + cards[i].picture + ".jpg";
+            gameImages[cards[i].id] = image;
+            image.onload = function(){
+              maybeInitGame();
+            };
+          }
+        }
+
+        function maybeInitGame () {
+          var complete = true;
+          for (var i in gameImages)
+            complete &= gameImages[i].complete;
+          if (!complete)
+            return;
+          initGame();
+        }
+
+        function initGame () {
+          for (var i = 0; i < 8 ; i++) {
+            var newCard_1 = koikoi.draw(),
+                newCard_2 = koikoi.draw();
+            if (newCard_1 && newCard_2) {
+              cardContext.drawImage(gameImages[newCard_1.id], i * 100, -147, 93, 150);
+              cardContext.drawImage(gameImages[newCard_2.id], i * 100, 400, 93, 150);
             } else {
               console.error("No more cards");
             }
-          } else {
-            alert("Your browser does not support canvas");
           }
-        });
-      });
 
-      preloadImages();
+          for (var i = 0; i < 8 ; i++) {
+            var newCard = koikoi.draw();
+            if (newCard) {
+              var x = 0, y = 0;
+              if (i % 2) {
+                x = (Math.floor(i/2) + 4) * 100;
+                y = 30;
+              } else {
+                x = (Math.floor(i/2) + 4) * 100;
+                y = 190;
+              }
+              cardContext.drawImage(gameImages[newCard.id], x, y, 93, 150);
+            } else {
+              console.error("No more cards");
+            }
+          }
+        }
+
+        preloadImages();
+      });
     </script>
   </head>
   <body>
-    <div>
-      <input type="button" value="draw" id="btnDrawCard">
-    </div>
     <div id="canvasContainer">
       <canvas id="cardCanvas" width="800" height="600">
         Your browser does not support canvas
