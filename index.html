@@ -8,6 +8,114 @@
     <script type="text/paperscript" canvas="cardCanvas">
       var SCALE = 1 / 10;
       var gameImages = {};
+      var matchedCards = [];
+
+      var player;
+      var ai;
+      var deck;
+
+      function Player(x, y) {
+        this.start_x = x || 48;
+        this.start_y = y || 450;
+        this.cards = [];
+      };
+
+      Player.prototype.draw = function() {
+        var newCard = hanafuda.draw();
+        if (newCard) {
+          var raster = new Raster(gameImages[newCard.id]);
+          raster.position.x = this.start_x + this.cards.length * 80;
+          raster.position.y = this.start_y;
+          raster.scale(SCALE);
+
+          var shiftRaster = function() {
+            this.position += new Point(0, -15);
+            for (var i in deck.cards[0]) {
+              if (newCard.month == deck.cards[0][i].data.month) {
+                matched.push(deck.cards[0][i]);
+              }
+            }
+            for (var i in deck.cards[1]) {
+              if (newCard.month == deck.cards[1][i].data.month) {
+                matched.push(deck.cards[1][i]);
+              }
+            }
+            for (var i in matched) {
+              matched[i].scale(2);
+            }
+            console.log(matched);
+          };
+          var unShiftRaster = function() {
+            this.position += new Point(0, 15);
+          };
+          raster.onClick = function() {
+            console.log(this.data);
+          }
+          raster.data = newCard;
+          raster.on('mouseenter', shiftRaster);
+          raster.on('mouseleave', unShiftRaster);
+          this.cards.push(raster);
+        } else {
+          console.error("No more cards");
+        }
+      }
+
+      function AI(x, y) {
+        this.start_x = x || 48;
+        this.start_y = y || -57;
+        this.cards = [];
+      };
+
+      AI.prototype.draw = function () {
+        var newCard = hanafuda.draw();
+        if (newCard) {
+          var raster = new Raster(gameImages[newCard.id]);
+          raster.position.x = this.start_x + (this.cards.length) * 80;
+          raster.position.y = this.start_y;
+          raster.data = newCard;
+          raster.scale(SCALE);
+          this.cards.push(raster);
+        } else {
+          console.error("No more cards");
+        }
+      }
+
+      function Deck(x, y1, y2) {
+        this.start_x = x || 48;
+        this.start_y = [
+          y1 || 120,
+          y2 || 250
+        ];
+        this.cards = {0: [], 1: []}
+      }
+
+      Deck.prototype.draw = function () {
+        var newCard = hanafuda.draw();
+        if (newCard) {
+          var x = 0, y = 0;
+          var raster = new Raster(gameImages[newCard.id]);
+
+          if (this.cards[0].length <= this.cards[1].length) {
+            x = this.start_x + (Math.floor(this.cards[0].length) + 4) * 80;
+            y = this.start_y[0];
+            this.cards[0].push(raster);
+          } else {
+            x = this.start_x + (Math.floor(this.cards[1].length) + 4) * 80;
+            y = this.start_y[1];
+            this.cards[1].push(raster);
+          }
+          raster.position.x = x;
+          raster.position.y = y;
+          raster.data = newCard;
+          raster.scale(SCALE);
+        } else {
+          console.error("No more cards");
+        }
+      }
+
+      player = new Player();
+      ai = new AI();
+      deck = new Deck();
 
       function preloadImages () {
         var cards = hanafuda.fetchAll();
@@ -27,53 +135,11 @@
 
       function initGame () {
         for (var i = 0; i < 8 ; i++) {
-          var newCard_1 = hanafuda.draw(),
-              newCard_2 = hanafuda.draw();
-          if (newCard_1 && newCard_2) {
-            var raster_1 = new Raster(gameImages[newCard_1.id]),
-                raster_2 = new Raster(gameImages[newCard_2.id]);
-
-            raster_1.position.x = 48 + i * 80;
-            raster_1.position.y = -57;
-            raster_1.scale(SCALE);
-            raster_2.position.x = 48 + i * 80;
-            raster_2.position.y = 450;
-            raster_2.scale(SCALE);
-
-            var shiftRaster = function() {
-              this.position += new Point(0, -15);
-            };
-            var unShiftRaster = function() {
-              this.position += new Point(0, 15);
-            };
-            raster_2.onClick = function() {
-              console.log(this.data);
-            }
-            raster_2.data = newCard_2;
-            raster_2.on('mouseenter', shiftRaster);
-            raster_2.on('mouseleave', unShiftRaster);
-          } else {
-            console.error("No more cards");
-          }
+          player.draw();
+          ai.draw();
         }
         for (var i = 0; i < 8 ; i++) {
-          var newCard = hanafuda.draw();
-          if (newCard) {
-            var x = 0, y = 0;
-            if (i % 2) {
-              x = 48 + (Math.floor(i/2) + 4) * 80;
-              y = 120;
-            } else {
-              x = 48 + (Math.floor(i/2) + 4) * 80;
-              y = 250;
-            }
-            var raster = new Raster(gameImages[newCard.id]);
-            raster.position.x = x;
-            raster.position.y = y;
-            raster.scale(SCALE);
-          } else {
-            console.error("No more cards");
-          }
+          deck.draw();
         }
       }
       preloadImages();
