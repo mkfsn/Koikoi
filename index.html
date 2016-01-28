@@ -24,32 +24,24 @@
         var newCard = hanafuda.draw();
         if (newCard) {
           var raster = new Raster(gameImages[newCard.id]);
-          raster.position.x = this.start_x + this.cards.length * 80;
+          raster.position.x = this.start_x + this.cards.length * 100;
           raster.position.y = this.start_y;
           raster.scale(SCALE);
 
           var shiftRaster = function() {
-            this.position += new Point(0, -15);
-            for (var i in deck.cards[0]) {
-              if (newCard.month == deck.cards[0][i].data.month) {
-                matched.push(deck.cards[0][i]);
-              }
-            }
-            for (var i in deck.cards[1]) {
-              if (newCard.month == deck.cards[1][i].data.month) {
-                matched.push(deck.cards[1][i]);
-              }
-            }
-            for (var i in matched) {
-              matched[i].scale(2);
-            }
-            console.log(matched);
+            matchedCards = deck.getMatched(newCard.month);
           };
           var unShiftRaster = function() {
-            this.position += new Point(0, 15);
+            matchedCards = [];
           };
           raster.onClick = function() {
-            console.log(this.data);
+            matchedCards = deck.getMatched(newCard.month);
+            if (matchedCards.length === 1) {
+              var target = matchedCards[0];
+              this.position = target.position;
+              this.rotate(15);
+              this.insertAbove(target);
+            }
           }
           raster.data = newCard;
           raster.on('mouseenter', shiftRaster);
@@ -70,7 +62,7 @@
         var newCard = hanafuda.draw();
         if (newCard) {
           var raster = new Raster(gameImages[newCard.id]);
-          raster.position.x = this.start_x + (this.cards.length) * 80;
+          raster.position.x = this.start_x + (this.cards.length) * 100;
           raster.position.y = this.start_y;
           raster.data = newCard;
           raster.scale(SCALE);
@@ -83,8 +75,8 @@
       function Deck(x, y1, y2) {
         this.start_x = x || 48;
         this.start_y = [
-          y1 || 120,
-          y2 || 250
+          y1 || 110,
+          y2 || 260
         ];
         this.cards = {0: [], 1: []}
       }
@@ -96,11 +88,11 @@
           var raster = new Raster(gameImages[newCard.id]);
 
           if (this.cards[0].length <= this.cards[1].length) {
-            x = this.start_x + (Math.floor(this.cards[0].length) + 4) * 80;
+            x = this.start_x + (Math.floor(this.cards[0].length) + 4) * 100;
             y = this.start_y[0];
             this.cards[0].push(raster);
           } else {
-            x = this.start_x + (Math.floor(this.cards[1].length) + 4) * 80;
+            x = this.start_x + (Math.floor(this.cards[1].length) + 4) * 100;
             y = this.start_y[1];
             this.cards[1].push(raster);
           }
@@ -111,6 +103,18 @@
         } else {
           console.error("No more cards");
         }
+      }
+
+      Deck.prototype.getMatched = function (month) {
+        var matched = [];
+        for (var i = 0; i < 2; i++) {
+          for (var j in this.cards[i]) {
+            if (this.cards[i][j].data.month === month) {
+              matched.push(this.cards[i][j]);
+            }
+          }
+        }
+        return matched;
       }
 
       player = new Player();
