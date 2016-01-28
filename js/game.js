@@ -6,18 +6,47 @@ var player;
 var ai;
 var deck;
 
-function Player(x, y) {
+function Player(x, y, w) {
   this.start_x = x || 48;
   this.start_y = y || 450;
+  this.width = w || 100;
   this.cards = [];
 };
 
+Player.prototype.drop = function(that) {
+  var self = this;
+  var idx = 0;
+  for ( ; idx < self.cards.length && that != self.cards[idx] ; idx++ )
+    ;
+
+  matchedCards = deck.getMatched(that.data.month);
+  if (matchedCards.length >= 1) {
+    var target = matchedCards[0];
+    that.position = target.position;
+    that.rotate(15);
+    that.insertAbove(target);
+
+    console.log(matchedCards[0]);
+    deck.drop(matchedCards[0]);
+    console.log(idx);
+    self.cards.splice(idx, 1);
+  } else {
+    idx = self.cards.length;
+  }
+
+  for ( ; idx < self.cards.length; idx++ ) {
+    self.cards[idx].position.x -= self.width;
+  }
+}
+
 Player.prototype.draw = function() {
+  var self = this;
   var newCard = hanafuda.draw();
   if (newCard) {
     var raster = new Raster(gameImages[newCard.id]);
-    raster.position.x = this.start_x + this.cards.length * 100;
+    raster.position.x = this.start_x + this.cards.length * this.width;
     raster.position.y = this.start_y;
+    raster.data = newCard;
     raster.scale(SCALE);
 
     var shiftRaster = function() {
@@ -27,15 +56,8 @@ Player.prototype.draw = function() {
       matchedCards = [];
     };
     raster.onClick = function() {
-      matchedCards = deck.getMatched(newCard.month);
-      if (matchedCards.length === 1) {
-        var target = matchedCards[0];
-        this.position = target.position;
-        this.rotate(15);
-        this.insertAbove(target);
-      }
+      self.drop(this);
     }
-    raster.data = newCard;
     raster.on('mouseenter', shiftRaster);
     raster.on('mouseleave', unShiftRaster);
     this.cards.push(raster);
@@ -107,6 +129,19 @@ Deck.prototype.getMatched = function (month) {
     }
   }
   return matched;
+}
+
+Deck.prototype.drop = function (matchedCard) {
+  var dropped = false;
+  for (var i = 0; i < 2 && !dropped; i++) {
+    for (var j in this.cards[i]) {
+      if (this.cards[i][j] === matchedCard) {
+        this.cards[i].splice(j, 1);
+        dropped = true;
+        break;
+      }
+    }
+  }
 }
 
 player = new Player();
